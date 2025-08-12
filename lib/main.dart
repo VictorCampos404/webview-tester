@@ -42,7 +42,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> initPlatformState() async {
     await _controller.initialize();
 
-    _controller.url.listen((value) {
+    _controller.urlOnNavigationStarting.listen((value) {
       setState(() {
         url = value;
       });

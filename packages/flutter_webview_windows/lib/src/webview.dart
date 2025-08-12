@@ -124,6 +124,13 @@ class WebviewController extends ValueNotifier<WebviewValue> {
   /// A stream reflecting the current URL.
   Stream<String> get url => _urlStreamController.stream;
 
+  final StreamController<String> _urlOnNavigationStartingStreamController =
+      StreamController<String>();
+
+  /// A stream reflecting the current URL.
+  Stream<String> get urlOnNavigationStarting =>
+      _urlOnNavigationStartingStreamController.stream;
+
   final StreamController<LoadingState> _loadingStateStreamController =
       StreamController<LoadingState>.broadcast();
 
@@ -203,6 +210,9 @@ class WebviewController extends ValueNotifier<WebviewValue> {
         switch (map['type']) {
           case 'urlChanged':
             _urlStreamController.add(map['value']);
+            break;
+          case 'urlNavigationStarting':
+            _urlOnNavigationStartingStreamController.add(map['value']);
             break;
           case 'onLoadError':
             final value = WebErrorStatus.values[map['value']];

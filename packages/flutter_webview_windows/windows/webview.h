@@ -104,7 +104,6 @@ struct EventRegistrations {
   EventRegistrationToken download_starting_token_{};
   EventRegistrationToken download_bytes_received_token_{};
   EventRegistrationToken download_state_changed_token_{};
-  //Adicionei
   EventRegistrationToken navigation_starting_token_{};
 };
 
@@ -113,6 +112,7 @@ class Webview {
   friend class WebviewHost;
 
   typedef std::function<void(const std::string&)> UrlChangedCallback;
+  typedef std::function<void(const std::string&)> UrlNavigationStartingCallback;
   typedef std::function<void(WebviewLoadingState)> LoadingStateChangedCallback;
   typedef std::function<void(COREWEBVIEW2_WEB_ERROR_STATUS)>
       OnLoadErrorCallback;
@@ -184,6 +184,10 @@ class Webview {
 
   void OnUrlChanged(UrlChangedCallback callback) {
     url_changed_callback_ = std::move(callback);
+  }
+  
+  void OnUrlNavigationStartingChanged(UrlNavigationStartingCallback callback) {
+    url_navigation_starting_callback_ = std::move(callback);
   }
 
   void OnLoadError(OnLoadErrorCallback callback) {
@@ -259,6 +263,7 @@ class Webview {
   EventRegistrations event_registrations_{};
 
   UrlChangedCallback url_changed_callback_;
+  UrlNavigationStartingCallback url_navigation_starting_callback_;
   LoadingStateChangedCallback loading_state_changed_callback_;
   DownloadEventCallback download_event_callback_;
   OnLoadErrorCallback on_load_error_callback_;

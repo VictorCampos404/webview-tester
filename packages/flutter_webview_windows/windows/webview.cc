@@ -238,7 +238,6 @@ void Webview::RegisterEventHandlers() {
       &event_registrations_.source_changed_token_);
 
 
-  //Adicionei
   webview_->add_NavigationStarting(
     Microsoft::WRL::Callback<ICoreWebView2NavigationStartingEventHandler>(
         [this](ICoreWebView2* sender, ICoreWebView2NavigationStartingEventArgs* args) -> HRESULT {
@@ -246,8 +245,8 @@ void Webview::RegisterEventHandlers() {
             if (SUCCEEDED(args->get_Uri(&wurl)) && wurl) {
                 std::string url = util::Utf8FromUtf16(wurl.get());
 
-                if (url_changed_callback_) {
-                    url_changed_callback_(url);
+                if (url_navigation_starting_callback_) {
+                    url_navigation_starting_callback_(url);
                 }
             }
             return S_OK;
