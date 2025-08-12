@@ -1,6 +1,4 @@
 {
-    "dart.flutterSdkPath": "C:\\Users\\Campos\\.puro\\envs\\totem\\flutter",
-    "dart.sdkPath": "C:\\Users\\Campos\\.puro\\envs\\totem\\flutter\\bin\\cache\\dart-sdk",
     "dart.lineLength": 80,
     "[dart]": {
         "editor.formatOnSave": true,
