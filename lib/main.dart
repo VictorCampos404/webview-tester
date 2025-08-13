@@ -156,15 +156,15 @@ class _MyHomePageState extends State<MyHomePage> {
                 SizedBox(
                   height: MediaQuery.of(context).size.height - 100,
                   width: MediaQuery.of(context).size.width,
-                  child: Expanded(
-                    child: Webview(
-                      _controller,
-                      permissionRequested:
-                          (url, permissionKind, isUserInitiated) async {
-                        return WebviewPermissionDecision.allow;
-                      },
-                    ),
+                  // child: Expanded(
+                  child: Webview(
+                    _controller,
+                    permissionRequested:
+                        (url, permissionKind, isUserInitiated) async {
+                      return WebviewPermissionDecision.allow;
+                    },
                   ),
+                  // ),
                 ),
                 SizedBox(
                   child: (isFocused)
