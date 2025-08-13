@@ -10,6 +10,17 @@ import 'package:flutter/widgets.dart';
 import 'cursor.dart';
 import 'enums.dart';
 
+class FocusChanged {
+  final bool hasFocus;
+  final String inputId;
+  final String inputName;
+  const FocusChanged(
+    this.hasFocus,
+    this.inputId,
+    this.inputName,
+  );
+}
+
 class HistoryChanged {
   final bool canGoBack;
   final bool canGoForward;
@@ -131,6 +142,13 @@ class WebviewController extends ValueNotifier<WebviewValue> {
   Stream<String> get urlOnNavigationStarting =>
       _urlOnNavigationStartingStreamController.stream;
 
+  final StreamController<FocusChanged> _onInputFocusChangedStreamController =
+      StreamController<FocusChanged>();
+
+  /// A stream reflecting the focused input.
+  Stream<FocusChanged> get inputFocus =>
+      _onInputFocusChangedStreamController.stream;
+
   final StreamController<LoadingState> _loadingStateStreamController =
       StreamController<LoadingState>.broadcast();
 
@@ -206,7 +224,6 @@ class WebviewController extends ValueNotifier<WebviewValue> {
       _eventStreamSubscription =
           _eventChannel.receiveBroadcastStream().listen((event) {
         final map = event as Map<dynamic, dynamic>;
-        print(map);
         switch (map['type']) {
           case 'urlChanged':
             _urlStreamController.add(map['value']);
@@ -248,8 +265,28 @@ class WebviewController extends ValueNotifier<WebviewValue> {
             break;
           case 'webMessageReceived':
             try {
-              final message = json.decode(map['value']);
+              final message = json.decode(json.decode(map['value']));
               _webMessageStreamController.add(message);
+
+              if (message['type'] == 'focus') {
+                _onInputFocusChangedStreamController.add(
+                  FocusChanged(
+                    true,
+                    message['id'] ?? '',
+                    message['name'] ?? '',
+                  ),
+                );
+              }
+
+              if (message['type'] == 'blur') {
+                _onInputFocusChangedStreamController.add(
+                  FocusChanged(
+                    false,
+                    message['id'] ?? '',
+                    message['name'] ?? '',
+                  ),
+                );
+              }
             } catch (ex) {
               _webMessageStreamController.addError(ex);
             }

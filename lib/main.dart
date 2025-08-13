@@ -114,6 +114,15 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     });
 
+    _controller.inputFocus.listen((value) {
+      if (value.hasFocus) {
+        print('FOCADO');
+      }
+      if (!value.hasFocus) {
+        print('DESFOCADO');
+      }
+    });
+
     await _controller.loadUrl(
       'https://portal.idp.homol.proderj.rj.gov.br/auth/realms/rj/protocol/openid-connect/auth?response_type=code&client_id=apprjdigital&redirect_uri=comexamplesdcapp:/&scope=openid',
     );
