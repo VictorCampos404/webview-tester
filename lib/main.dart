@@ -29,6 +29,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  bool isFocused = false;
   final _controller = WebviewController();
 
   String url = "";
@@ -117,9 +118,15 @@ class _MyHomePageState extends State<MyHomePage> {
     _controller.inputFocus.listen((value) {
       if (value.hasFocus) {
         print('FOCADO');
+        setState(() {
+          isFocused = true;
+        });
       }
       if (!value.hasFocus) {
         print('DESFOCADO');
+        setState(() {
+          isFocused = false;
+        });
       }
     });
 
@@ -144,38 +151,50 @@ class _MyHomePageState extends State<MyHomePage> {
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
             ),
-            Expanded(
-              child: Webview(
-                _controller,
-                permissionRequested:
-                    (url, permissionKind, isUserInitiated) async {
-                  return WebviewPermissionDecision.allow;
-                },
-              ),
+            Stack(
+              children: [
+                SizedBox(
+                  height: MediaQuery.of(context).size.height - 100,
+                  width: MediaQuery.of(context).size.width,
+                  child: Expanded(
+                    child: Webview(
+                      _controller,
+                      permissionRequested:
+                          (url, permissionKind, isUserInitiated) async {
+                        return WebviewPermissionDecision.allow;
+                      },
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  child: (isFocused)
+                      ? FloatingActionButton(
+                          onPressed: () async {
+                            String text = "1";
+                            await _controller.executeScript(
+                              """
+                      if (document.activeElement && 
+                        (document.activeElement.tagName.toLowerCase() === 'input' || 
+                          document.activeElement.tagName.toLowerCase() === 'textarea')) {
+                          let el = document.activeElement;
+                          let start = el.selectionStart || el.value.length;
+                          let end = el.selectionEnd || el.value.length;
+                          el.value = el.value.substring(0, start) + "$text" + el.value.substring(end);
+                          el.selectionStart = el.selectionEnd = start + "$text".length;
+                          el.dispatchEvent(new Event('input', { bubbles: true }));
+                      }
+                      """,
+                            );
+                          },
+                          tooltip: 'Increment',
+                          child: const Icon(Icons.add),
+                        )
+                      : null,
+                )
+              ],
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          String text = "1";
-          await _controller.executeScript(
-            """
-            if (document.activeElement && 
-              (document.activeElement.tagName.toLowerCase() === 'input' || 
-                document.activeElement.tagName.toLowerCase() === 'textarea')) {
-                let el = document.activeElement;
-                let start = el.selectionStart || el.value.length;
-                let end = el.selectionEnd || el.value.length;
-                el.value = el.value.substring(0, start) + "$text" + el.value.substring(end);
-                el.selectionStart = el.selectionEnd = start + "$text".length;
-                el.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-            """,
-          );
-        },
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
       ),
     );
   }

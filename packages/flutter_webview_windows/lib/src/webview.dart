@@ -206,6 +206,14 @@ class WebviewController extends ValueNotifier<WebviewValue> {
   Stream<bool> get containsFullScreenElementChanged =>
       _containsFullScreenElementChangedStreamController.stream;
 
+  FocusChanged notifyFocusChanged = FocusChanged(
+    true,
+    '',
+    '',
+  );
+
+  bool _isFocused = false;
+
   WebviewController() : super(WebviewValue.uninitialized());
 
   /// Initializes the underlying platform view.
@@ -224,6 +232,7 @@ class WebviewController extends ValueNotifier<WebviewValue> {
       _eventStreamSubscription =
           _eventChannel.receiveBroadcastStream().listen((event) {
         final map = event as Map<dynamic, dynamic>;
+        print("${map['type']} ${map['value']}");
         switch (map['type']) {
           case 'urlChanged':
             _urlStreamController.add(map['value']);
@@ -268,24 +277,24 @@ class WebviewController extends ValueNotifier<WebviewValue> {
               final message = json.decode(json.decode(map['value']));
               _webMessageStreamController.add(message);
 
-              if (message['type'] == 'focus') {
-                _onInputFocusChangedStreamController.add(
-                  FocusChanged(
+              if (_isFocused) {
+                // if (!_isOnCooldown) {
+                if (message['type'] == 'focus') {
+                  print("Nem: Vai abrir o teclado");
+                  notifyFocusChanged = FocusChanged(
                     true,
                     message['id'] ?? '',
                     message['name'] ?? '',
-                  ),
-                );
-              }
-
-              if (message['type'] == 'blur') {
-                _onInputFocusChangedStreamController.add(
-                  FocusChanged(
+                  );
+                }
+                if (message['type'] == 'blur') {
+                  notifyFocusChanged = FocusChanged(
                     false,
                     message['id'] ?? '',
                     message['name'] ?? '',
-                  ),
-                );
+                  );
+                }
+                _onInputFocusChangedStreamController.add(notifyFocusChanged);
               }
             } catch (ex) {
               _webMessageStreamController.addError(ex);
@@ -294,6 +303,9 @@ class WebviewController extends ValueNotifier<WebviewValue> {
           case 'containsFullScreenElementChanged':
             _containsFullScreenElementChangedStreamController.add(map['value']);
             break;
+          case 'onFocusChanged':
+            _isFocused = map['value'];
+            _onInputFocusChangedStreamController.add(notifyFocusChanged);
         }
       });
 
