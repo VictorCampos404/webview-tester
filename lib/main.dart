@@ -42,6 +42,72 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> initPlatformState() async {
     await _controller.initialize();
 
+    _controller.addScriptToExecuteOnDocumentCreated(
+      """
+      function applyStyle() {
+          if (!window.location.href.includes('login')) return;
+
+          document.body.style.transform = 'scale(2)';
+
+          var containerElements = document.getElementsByClassName('container');
+          if (containerElements.length > 0) {
+              var container = containerElements[0];
+              var asideElement = container.querySelector('aside');
+              if (asideElement) {
+              asideElement.remove();
+              }
+
+              var mainElementPassword = document.querySelector('main');
+              if (mainElementPassword) {
+              mainElementPassword.style.marginTop = '350px';
+              }
+          }
+
+          document.addEventListener('focusin', function(e) {
+            if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') {
+              window.chrome.webview.postMessage(JSON.stringify({
+                type: 'focus',
+                tag: e.target.tagName.toLowerCase(),
+                id: e.target.id || null,
+                name: e.target.name || null,
+                value: e.target.value || null
+              }));
+            }
+          });
+
+          document.addEventListener('focusout', function(e) {
+            if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') {
+              window.chrome.webview.postMessage(JSON.stringify({
+                type: 'blur',
+                tag: e.target.tagName.toLowerCase(),
+                id: e.target.id || null,
+                name: e.target.name || null,
+                value: e.target.value || null
+              }));
+            }
+          });
+      }
+
+      if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", applyStyle);
+      } else {
+          applyStyle();
+      }
+
+      const observer = new MutationObserver(() => {
+          applyStyle();
+      });
+
+      observer.observe(document.body, {
+          childList: true,
+          subtree: true,
+      });
+
+      
+
+      """,
+    );
+
     _controller.urlOnNavigationStarting.listen((value) {
       setState(() {
         url = value;
@@ -82,7 +148,23 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () async {
+          String text = "1";
+          await _controller.executeScript(
+            """
+            if (document.activeElement && 
+              (document.activeElement.tagName.toLowerCase() === 'input' || 
+                document.activeElement.tagName.toLowerCase() === 'textarea')) {
+                let el = document.activeElement;
+                let start = el.selectionStart || el.value.length;
+                let end = el.selectionEnd || el.value.length;
+                el.value = el.value.substring(0, start) + "$text" + el.value.substring(end);
+                el.selectionStart = el.selectionEnd = start + "$text".length;
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            """,
+          );
+        },
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ),
