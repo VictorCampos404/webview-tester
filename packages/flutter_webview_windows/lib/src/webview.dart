@@ -232,7 +232,6 @@ class WebviewController extends ValueNotifier<WebviewValue> {
       _eventStreamSubscription =
           _eventChannel.receiveBroadcastStream().listen((event) {
         final map = event as Map<dynamic, dynamic>;
-        print("${map['type']} ${map['value']}");
         switch (map['type']) {
           case 'urlChanged':
             _urlStreamController.add(map['value']);
@@ -280,7 +279,6 @@ class WebviewController extends ValueNotifier<WebviewValue> {
               if (_isFocused) {
                 // if (!_isOnCooldown) {
                 if (message['type'] == 'focus') {
-                  print("Nem: Vai abrir o teclado");
                   notifyFocusChanged = FocusChanged(
                     true,
                     message['id'] ?? '',
